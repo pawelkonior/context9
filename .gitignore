@@ -9,6 +9,13 @@ wheels/
 # Virtual environments
 .venv
 
+# Local secrets
+.env
+.env.*
+.codex/.env
+.codex/tmp/
+.codex/memories/
+
 # Test and coverage artifacts
 .coverage
 .coverage.*
