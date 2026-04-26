@@ -5,6 +5,9 @@ from pydantic import AliasChoices, Field, HttpUrl, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 type EmbeddingDimensions = Annotated[int, Field(ge=8, le=4096)]
+type ChunkMaxChars = Annotated[int, Field(gt=0)]
+type ChunkOverlap = Annotated[int, Field(ge=0)]
+type QdrantTimeoutSeconds = Annotated[int, Field(gt=0)]
 
 DEFAULT_QDRANT_URL = HttpUrl("http://localhost:6333")
 DEFAULT_SEARCH_API_URL = HttpUrl("http://localhost:8000")
@@ -17,11 +20,15 @@ class Settings(BaseSettings):
     Attributes:
         qdrant_url: Base URL of the Qdrant service.
         qdrant_api_key: Optional API key used to authenticate with Qdrant.
+        qdrant_timeout_seconds: Request timeout for Qdrant operations.
+        collection_prefix: Prefix used for generated Qdrant collection names.
         search_api_url: Base URL of the search API service.
         search_api_key: Optional API key used to authenticate with the search API.
         embedder_url: Base URL of the embedding service.
         embedder_api_key: Optional API key used to authenticate with the embedding service.
         embedding_dimensions: Number of dimensions produced by the embedding model.
+        chunk_max_chars: Maximum number of characters allowed in each text chunk.
+        chunk_overlap: Number of trailing characters carried into the next text chunk.
     """
 
     model_config = SettingsConfigDict(
@@ -47,6 +54,16 @@ class Settings(BaseSettings):
         description="Optional API key used to authenticate with Qdrant.",
         validation_alias=AliasChoices("QDRANT_API_KEY"),
     )
+    qdrant_timeout_seconds: QdrantTimeoutSeconds = Field(
+        default=10,
+        description="Request timeout for Qdrant operations.",
+        validation_alias=AliasChoices("QDRANT_TIMEOUT_SECONDS"),
+    )
+    collection_prefix: str = Field(
+        default="context9",
+        description="Prefix used for generated Qdrant collection names.",
+        validation_alias=AliasChoices("COLLECTION_PREFIX"),
+    )
 
     search_api_url: Annotated[
         HttpUrl,
@@ -71,6 +88,16 @@ class Settings(BaseSettings):
         default=384,
         description="Number of dimensions produced by the embedding model.",
         validation_alias=AliasChoices("EMBEDDING_DIMENSIONS"),
+    )
+    chunk_max_chars: ChunkMaxChars = Field(
+        default=1000,
+        description="Maximum number of characters allowed in each text chunk.",
+        validation_alias=AliasChoices("CHUNK_MAX_CHARS"),
+    )
+    chunk_overlap: ChunkOverlap = Field(
+        default=160,
+        description="Number of trailing characters carried into the next text chunk.",
+        validation_alias=AliasChoices("CHUNK_OVERLAP"),
     )
 
 
